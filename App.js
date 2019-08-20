@@ -12,16 +12,22 @@ export default class App extends Component{
       this.state = {
         permissionStatus:'denied', 
         bluetoothStatus: 'disabled',
-        info:''
-    }
+        info:'',
+        error:'',
+        isConnected: false,
+      }
+
+      this.startScan = this.startScan.bind(this);
+      this.stopScan = this.stopScan.bind(this);
   }
+
 
   info(message) {
       this.setState({info: message})
   }
 
   error(message) {
-      this.setState({info: "ERROR: " + message})
+      this.setState({error: "ERROR: " + message})
   }
 
   async requestPermission() {
@@ -38,10 +44,42 @@ export default class App extends Component{
       }
     }
 
+  // scanAndConnect() {
+  //   this.manager.startDeviceScan(null,
+  //                                 null, (error, device) => {
+  //     this.info("Scanning...")
+  //     console.log(device)
+
+  //     if (error) {
+  //       this.error(error.message)
+  //       return
+  //     }
+
+  //     if (device.id === "B0702880-A295-A8AB-F734-031A98A512DE") {
+  //       this.info("Connecting to Beacon")
+  //       this.manager.stopDeviceScan()
+  //       device.connect()
+  //         .then((device) => {
+  //           this.info("Discovering services and characteristics")
+  //           return device.discoverAllServicesAndCharacteristics()
+  //         })
+  //         .then((device) => {
+  //           this.info("Setting notifications")
+  //           return this.setupNotifications(device)
+  //         })
+  //         .then(() => {
+  //           this.info("Listening...")
+  //         }, (error) => {
+  //           this.error(error.message)
+  //         })
+  //     }
+  //   });
+  // }
+
   scanAndConnect() {
     this.devices = [];
 
-    this.manager.startDeviceScan(null, {allowDuplicates:false}, (error, device) => {
+    this.manager.startDeviceScan(null, null, (error, device) => {
       this.info("Scanning...")
       this.devices.push(device.name)
       if(error){
@@ -65,7 +103,8 @@ export default class App extends Component{
   timer() {
     setTimeout(() => {
       this.stopScan();
-    }, 7000)
+    }, 10000);
+
   }
 
   componentDidMount() {
@@ -83,6 +122,13 @@ export default class App extends Component{
     this.timer();
   }
 
+  printDevices() {
+    const dev = this.devices.map((e) => {
+      `${e} <br>`
+    })
+    return dev
+  }
+
   render(){
       return(
             <ScrollView style={{flex:1, padding:15}}>
@@ -91,6 +137,9 @@ export default class App extends Component{
               </Text>
               <Text style={{fontSize:20, alignSelf:'center', color:'blue'}}>
                   Bluetooth is {this.state.bluetoothStatus}
+              </Text>
+              <Text style={{fontSize:20, alignSelf:'center', color:'black'}}>
+                  {this.state.error}
               </Text>
               <Text style={{fontSize:20, alignSelf:'center', color:'black'}}>
                   {this.state.info}
